@@ -1,33 +1,49 @@
 %% multicancel.sty
-%% Package for advanced, unslimmed parallel multi-line cancellations
+%% Package for advanced, fully extendable parallel multi-line cancellations
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{multicancel}[2026/09/26 v1.0 Multi-line dynamic cancellations]
+\ProvidesPackage{multicancel}[2026/09/26 v1.1 Multi-line dynamic cancellations]
 
 \RequirePackage{amsmath}
 \RequirePackage{tikz}
 \usetikzlibrary{calc}
 
+\makeatletter
+% Define a safe token carrier that bypasses internal structural switches
 \newcommand{\multicancel@count}{1}
 
-\newcommand{\multicancel@math}[2]{%
+% Optimized helper engine: handles mathematical scaling and vector boundaries
+\newcommand{\multicancel@engine}[2]{%
   \begin{tikzpicture}[baseline=(content.base), label distance=0pt]
+    % 1. Parse content cleanly into a safe structural frame
     \node[inner sep=0pt, outer sep=0pt] (content) {\ensuremath{#1#2}};
+    
+    % 2. Draw 'n' mathematically interpolated parallel lines spanning the true width
     \foreach \i in {1,...,\multicancel@count} {
-      \pgfmathsetmacro{\spacing}{\multicancel@count > 10 ? 0.7pt : 1.4pt}
-      \pgfmathsetmacro{\offset}{((\i - 1) - (\multicancel@count - 1)/2) * \spacing}
-      \draw[line cap=round, shorten <= -1pt, shorten >= -1pt] 
+      % Calculate an active slope fraction step between 0 and 1
+      \pgfmathsetmacro{\t}{\multicancel@count > 1 ? (\i - 1)/(\multicancel@count - 1) : 0.5}
+      % Symmetrically interpolate the offsets relative to the edges of the box
+      \pgfmathsetmacro{\offset}{(\t - 0.5) * 4pt} 
+      
+      \draw[
+        line cap=round, 
+        shorten <= -1.5pt, 
+        shorten >= -1.5pt
+      ] 
       ($(content.south west) + (\offset, 0)$) -- ($(content.north east) + (\offset, 0)$);
     }
   \end{tikzpicture}%
 }
 
+% User command: \multicancel[n]{content}
 \NewDocumentCommand{\multicancel}{O{1} m}{%
   \renewcommand{\multicancel@count}{#1}%
   \relax\ifmmode
-    \mathpalette{\multicancel@math}{#2}%
+    % Safely isolate active math fonts
+    \mathpalette{\multicancel@engine}{#2}%
   \else
-    \multicancel@math{\textstyle}{\text{#2}}%
+    % Safely isolate text structures, eliminating list environment context crashes (\item)
+    \multicancel@engine{\textstyle}{\text{#2}}%
   \fi
 }
-
+\makeatother
 \end{input}
