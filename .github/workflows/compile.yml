@@ -1,0 +1,24 @@
+name: Compile LaTeX Documentation
+on:
+  push:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Git repository
+        uses: actions/checkout@v4
+
+      - name: Compile LaTeX document
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: multicancel.tex
+
+      - name: Commit compiled PDF back to repo
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@://github.com"
+          git add multicancel.pdf
+          git commit -m "Automated PDF generation" || exit 0
+          git push
+          
