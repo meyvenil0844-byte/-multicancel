@@ -1,0 +1,33 @@
+%% multicancel.sty
+%% Package for advanced, unslimmed parallel multi-line cancellations
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{multicancel}[2026/09/26 v1.0 Multi-line dynamic cancellations]
+
+\RequirePackage{amsmath}
+\RequirePackage{tikz}
+\usetikzlibrary{calc}
+
+\newcommand{\multicancel@count}{1}
+
+\newcommand{\multicancel@math}[2]{%
+  \begin{tikzpicture}[baseline=(content.base), label distance=0pt]
+    \node[inner sep=0pt, outer sep=0pt] (content) {\ensuremath{#1#2}};
+    \foreach \i in {1,...,\multicancel@count} {
+      \pgfmathsetmacro{\spacing}{\multicancel@count > 10 ? 0.7pt : 1.4pt}
+      \pgfmathsetmacro{\offset}{((\i - 1) - (\multicancel@count - 1)/2) * \spacing}
+      \draw[line cap=round, shorten <= -1pt, shorten >= -1pt] 
+      ($(content.south west) + (\offset, 0)$) -- ($(content.north east) + (\offset, 0)$);
+    }
+  \end{tikzpicture}%
+}
+
+\NewDocumentCommand{\multicancel}{O{1} m}{%
+  \renewcommand{\multicancel@count}{#1}%
+  \relax\ifmmode
+    \mathpalette{\multicancel@math}{#2}%
+  \else
+    \multicancel@math{\textstyle}{\text{#2}}%
+  \fi
+}
+
+\end{input}
