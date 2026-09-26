@@ -2,18 +2,16 @@
 \usepackage{amsmath}
 \usepackage{tikz}
 \usetikzlibrary{calc}
-\usepackage{hyperref}
 
-% --- PASTE THE MULTICANCEL PREAMBLE CODE FOR DOCUMENTATION PURPOSES ---
 \makeatletter
 \newcommand{\multicancel@count}{1}
-\newcommand{\multicancel@math}{%
+\newcommand{\multicancel@engine}{%
   \begin{tikzpicture}[baseline=(content.base), label distance=0pt]
     \node[inner sep=0pt, outer sep=0pt] (content) {\ensuremath{#1#2}};
     \foreach \i in {1,...,\multicancel@count} {
-      \pgfmathsetmacro{\spacing}{\multicancel@count > 10 ? 0.7pt : 1.4pt}
-      \pgfmathsetmacro{\offset}{((\i - 1) - (\multicancel@count - 1)/2) * \spacing}
-      \draw[line cap=round, shorten <= -1pt, shorten >= -1pt] 
+      \pgfmathsetmacro{\t}{\multicancel@count > 1 ? (\i - 1)/(\multicancel@count - 1) : 0.5}
+      \pgfmathsetmacro{\offset}{(\t - 0.5) * 4pt} 
+      \draw[line cap=round, shorten <= -1.5pt, shorten >= -1.5pt] 
       ($(content.south west) + (\offset, 0)$) -- ($(content.north east) + (\offset, 0)$);
     }
   \end{tikzpicture}%
@@ -21,65 +19,36 @@
 \NewDocumentCommand{\multicancel}{O{1} m}{%
   \renewcommand{\multicancel@count}{#1}%
   \relax\ifmmode
-    \mathpalette{\multicancel@math}{#2}%
+    \mathpalette{\multicancel@engine}{#2}%
   \else
-    \multicancel@math{\textstyle}{\text{#2}}%
+    \multicancel@engine{\textstyle}{\text{#2}}%
   \fi
 }
 \makeatother
-% ----------------------------------------------------------------------
 
-\title{The \textsf{multicancel} Package\\Parallel multi-line cancellations with infinite scalability}
-\author{Your Name}
-\date{v1.0 -- \today}
+\title{The \textsf{multicancel} Package}
+\author{Mustafa Selimhan Y\i lmaz}
+\date{v1.1 -- \today}
 
 \begin{document}
-
 \maketitle
 
 \section{Introduction}
-The \textsf{multicancel} package provides advanced, extendable parallel multi-line cancellations across math expressions, large operators, and plain text. 
-
-Unlike traditional solutions, it prevents lines from slimming down dynamically when wrapping large content, maintains perfect math style scaling, and works natively across \textbf{pdf\LaTeX}, \textbf{\XeLaTeX}, and \textbf{Lua\LaTeX}.
+The \textsf{multicancel} package provides parallel multi-line cancellations across math expressions, large operators, and plain text. It prevents lines from slimming down dynamically when wrapping large content, maintains math styles, and functions across pdf\LaTeX, \XeLaTeX, and Lua\LaTeX.
 
 \section{Usage}
-Load the package in your preamble:
-\begin{verbatim}
-\usepackage{multicancel}
-\end{verbatim}
-
 \DescribeMacro{\multicancel}
-The primary command is invoked as follows:
 \begin{verbatim}
 \multicancel[n]{content}
 \end{verbatim}
-Where |[n]| is an optional integer specifying the number of parallel cancel slashes (defaults to 1 if omitted), and |{content}| is the target text or equation.
 
 \section{Examples}
-
-\subsection{Standard and Infinite Scalability}
-The macro handles any arbitrary number of lines without breaking:
-\begin{itemize}
-    \item Default (1 line): $\multicancel{x+y}$
-    \item Double (2 lines): $\multicancel[2]{x+y}$
-    \item Quadruple (4 lines): $\multicancel[4]{x+y}$
-    \item Extreme (20 lines): $\multicancel[20]{\text{Nullified}}$
-\end{itemize}
-
-\subsection{Large Operators and Equations}
-It scales perfectly without dropping script styles or breaking fractions:
-\[
-\multicancel[3]{\sum_{i=1}^{n} i} \quad \text{and} \quad \multicancel[4]{\int_{-\infty}^{\infty} e^{-x^2} \, dx} = \sqrt{\pi}
-\]
+Default (1 line): $\multicancel{x+y}$\\
+Double (2 lines): $\multicancel[2]{x+y}$\\
+Quadruple (4 lines): $\multicancel[4]{x+y}$
 
 \[
-f(x) = \multicancel[2]{\frac{a_0 + \sum_{k=1}^{\infty} (a_k \cos kx + b_k \sin kx)}{2 \pi \cdot \sigma^2}}
+\multicancel[4]{\sum_{i=1}^{n} i} \quad \text{and} \quad \multicancel[3]{\int_{-\infty}^{\infty} e^{-x^2} \, dx}
 \]
-
-\section{Implementation Details}
-The engine calculates bounding boxes dynamically via \textsf{TikZ} nodes, computing standard X-axis offsets symmetrically distributed around the absolute horizontal center line of the wrapped expression.
-
-\section{License}
-Released under the \LaTeX\ Project Public License (LPPL) 1.3c or later.
 
 \end{document}
