@@ -1,7 +1,7 @@
 The LaTeX Project Public License
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-This software is Copyright (c) 2026 by Mustafa Selimhan Yılmaz.
+Copyright (C) 2026 by meyvenil0844-byte
 
 This work may be distributed and/or modified under the
 conditions of the LaTeX Project Public License, either version 1.3c
@@ -13,9 +13,26 @@ version 2005/12/01 or later.
 
 This work has the LPPL maintenance status `maintained'.
 
-The Current Maintainer of this work is [Your Name].
+The Current Maintainer of this work is meyvenil0844-byte.
 
 This work consists of the files:
   multicancel.sty
   multicancel.tex
   README.md
+
+Background
+==========
+
+The LaTeX Project Public License (LPPL) is the standard license for
+LaTeX software. It is a free software license, compatible with the
+DFSG (Debian Free Software Guidelines), ensuring that the software
+can be freely used, modified, and distributed.
+
+Warranty
+========
+
+There is no warranty for the program. Except when otherwise stated
+in writing, the copyright holder provides the program "as is"
+without warranty of any kind, either expressed or implied. The
+entire risk as to the quality and performance of the program is
+with you.
