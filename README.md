@@ -1,0 +1,2 @@
+# -multicancel
+A latex command
