@@ -6,77 +6,69 @@
 \RequirePackage{amsmath}
 \RequirePackage{tikz}
 \RequirePackage{xcolor}
-\RequirePackage{xparse} % Fixes the Undefined \NewDocumentCommand error
+\RequirePackage{xparse}
 \usetikzlibrary{calc,arrows.meta}
 
 \makeatletter
-% Define explicit, safe text container boxes to store configuration values
+% Configuration tokens
 \newcommand{\multicancel@count}{1}
 \newcommand{\multicancel@color}{black}
 \newcommand{\multicancel@type}{c} 
 \newcommand{\multicancel@target}{}
 
-% Core drawing engine with perfectly valid parameter escaping (##1, ##2)
-\newcommand{\multicancel@engine}[2]{%
+% Helper macro to cleanly unpack math style arguments to bypass the \foreach bug
+\newcommand{\multicancel@draw}[2]{%
   \begin{tikzpicture}[baseline=(content.base), label distance=0pt]
-    % Render mathematical expression
     \node[inner sep=0pt, outer sep=0pt] (content) {\ensuremath{#1#2}};
-    
-    % Loop using token variables safely escaped for inner math boxes
-    \foreach \i in {1,...,\multicancel@count} {
-      \pgfmathsetmacro{\t}{\multicancel@count > 1 ? (\i - 1)/(\multicancel@count - 1) : 0.5}
-      \pgfmathsetmacro{\offset}{(\t - 0.5) * 4.5pt}
-      
+    \foreach \multicancel@i in {1,...,\multicancel@count} {
+      \pgfmathsetmacro{\multicancel@t}{\multicancel@count > 1 ? (\multicancel@i - 1)/(\multicancel@count - 1) : 0.5}
+      \pgfmathsetmacro{\multicancel@offset}{(\multicancel@t - 0.5) * 4.5pt}
       \tikzset{cancel@style/.style={draw=\multicancel@color, line cap=round, shorten <= -1.5pt, shorten >= -1.5pt}}
-      
-      % Type 1: \multicancel
+      % Type 1: Forward Slash
       \if\multicancel@type c
-        \draw[cancel@style] ($(content.south west) + (\offset, 0)$) -- ($(content.north east) + (\offset, 0)$);
+        \draw[cancel@style] ($(content.south west) + (\multicancel@offset, 0)$) -- ($(content.north east) + (\multicancel@offset, 0)$);
       \fi
-      
-      % Type 2: \multibcancel
+      % Type 2: Backward Slash
       \if\multicancel@type b
-        \draw[cancel@style] ($(content.north west) + (\offset, 0)$) -- ($(content.south east) + (\offset, 0)$);
+        \draw[cancel@style] ($(content.north west) + (\multicancel@offset, 0)$) -- ($(content.south east) + (\multicancel@offset, 0)$);
       \fi
-      
-      % Type 3: \multixcancel
+      % Type 3: X Cross
       \if\multicancel@type x
-        \draw[cancel@style] ($(content.south west) + (\offset, 0)$) -- ($(content.north east) + (\offset, 0)$);
-        \draw[cancel@style] ($(content.north west) + (\offset, 0)$) -- ($(content.south east) + (\offset, 0)$);
+        \draw[cancel@style] ($(content.south west) + (\multicancel@offset, 0)$) -- ($(content.north east) + (\multicancel@offset, 0)$);
+        \draw[cancel@style] ($(content.north west) + (\multicancel@offset, 0)$) -- ($(content.south east) + (\multicancel@offset, 0)$);
       \fi
-      
-      % Type 4: \multicancelto
+      % Type 4: Cancel To Value
       \if\multicancel@type t
-        \ifnum\i=\multicancel@count
-          \draw[cancel@style, -{Stealth[scale=0.8]}] ($(content.south west) + (\offset, 0)$) -- ($(content.north east) + (\offset, 0)$)
+        \ifnum\multicancel@i=\multicancel@count
+          \draw[cancel@style, -{Stealth[scale=0.8]}] ($(content.south west) + (\multicancel@offset, 0)$) -- ($(content.north east) + (\multicancel@offset, 0)$)
             node[anchor=south west, inner sep=0.5pt, font=\scriptsize, text=\multicancel@color] {\ensuremath{#1\multicancel@target}};
         \else
-          \draw[cancel@style] ($(content.south west) + (\offset, 0)$) -- ($(content.north east) + (\offset, 0)$);
+          \draw[cancel@style] ($(content.south west) + (\multicancel@offset, 0)$) -- ($(content.north east) + (\multicancel@offset, 0)$);
         \fi
       \fi
     }
   \end{tikzpicture}%
 }
 
-% --- Squeaky-Clean, Fully Parsed Interface Commands ---
+% Interface command routing
 \NewDocumentCommand{\multicancel}{O{1} O{black} m}{%
   \def\multicancel@count{#1}\def\multicancel@color{#2}\def\multicancel@type{c}%
-  \relax\ifmmode\mathpalette{\multicancel@engine}{#3}\else\multicancel@engine{\textstyle}{\text{#3}}\fi
+  \relax\ifmmode\mathpalette{\multicancel@draw}{#3}\else\multicancel@draw{\textstyle}{\text{#3}}\fi
 }
 
 \NewDocumentCommand{\multibcancel}{O{1} O{black} m}{%
   \def\multicancel@count{#1}\def\multicancel@color{#2}\def\multicancel@type{b}%
-  \relax\ifmmode\mathpalette{\multicancel@engine}{#3}\else\multicancel@engine{\textstyle}{\text{#3}}\fi
+  \relax\ifmmode\mathpalette{\multicancel@draw}{#3}\else\multicancel@draw{\textstyle}{\text{#3}}\fi
 }
 
 \NewDocumentCommand{\multixcancel}{O{1} O{black} m}{%
   \def\multicancel@count{#1}\def\multicancel@color{#2}\def\multicancel@type{x}%
-  \relax\ifmmode\mathpalette{\multicancel@engine}{#3}\else\multicancel@engine{\textstyle}{\text{#3}}\fi
+  \relax\ifmmode\mathpalette{\multicancel@draw}{#3}\else\multicancel@draw{\textstyle}{\text{#3}}\fi
 }
 
 \NewDocumentCommand{\multicancelto}{O{1} O{black} m m}{%
   \def\multicancel@count{#1}\def\multicancel@color{#2}\def\multicancel@type{t}\def\multicancel@target{#3}%
-  \relax\ifmmode\mathpalette{\multicancel@engine}{#4}\else\multicancel@engine{\textstyle}{\text{#4}}\fi
+  \relax\ifmmode\mathpalette{\multicancel@draw}{#4}\else\multicancel@draw{\textstyle}{\text{#4}}\fi
 }
 
 \makeatother
