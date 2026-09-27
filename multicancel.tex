@@ -1,54 +1,51 @@
 \documentclass{ltxdoc}
-\usepackage{amsmath}
-\usepackage{tikz}
-\usetikzlibrary{calc}
+\usepackage{multicancel}
+\usepackage{xcolor}
 
-\makeatletter
-\newcommand{\multicancel@count}{1}
-\newcommand{\multicancel@engine}{%
-  \begin{tikzpicture}[baseline=(content.base), label distance=0pt]
-    \node[inner sep=0pt, outer sep=0pt] (content) {\ensuremath{#1#2}};
-    \foreach \i in {1,...,\multicancel@count} {
-      \pgfmathsetmacro{\t}{\multicancel@count > 1 ? (\i - 1)/(\multicancel@count - 1) : 0.5}
-      \pgfmathsetmacro{\offset}{(\t - 0.5) * 4pt} 
-      \draw[line cap=round, shorten <= -1.5pt, shorten >= -1.5pt] 
-      ($(content.south west) + (\offset, 0)$) -- ($(content.north east) + (\offset, 0)$);
-    }
-  \end{tikzpicture}%
-}
-\NewDocumentCommand{\multicancel}{O{1} m}{%
-  \renewcommand{\multicancel@count}{#1}%
-  \relax\ifmmode
-    \mathpalette{\multicancel@engine}{#2}%
-  \else
-    \multicancel@engine{\textstyle}{\text{#2}}%
-  \fi
-}
-\makeatother
-
-\title{The \textsf{multicancel} Package}
+\title{The \textsf{multicancel} Package\\Universal Extended and Tallable Cancellations}
 \author{Mustafa Selimhan Y\i lmaz}
-\date{v1.1 -- \today}
+\date{v1.3 -- \today}
 
 \begin{document}
 \maketitle
 
 \section{Introduction}
-The \textsf{multicancel} package provides parallel multi-line cancellations across math expressions, large operators, and plain text. It prevents lines from slimming down dynamically when wrapping large content, maintains math styles, and functions across pdf\LaTeX, \XeLaTeX, and Lua\LaTeX.
+The \textsf{multicancel} package provides advanced, fully extendable, tallable, and color-compatible parallel multi-line cancellations. 
 
-\section{Usage}
-\DescribeMacro{\multicancel}
-\begin{verbatim}
-\multicancel[n]{content}
-\end{verbatim}
+Unlike traditional math cancellation packages, it prevents slashes from flattening or slimming down when applied to large math symbols or long expressions. It works natively across \textbf{pdf\LaTeX}, \textbf{\XeLaTeX}, and \textbf{Lua\LaTeX} without causing layout alignment crashes.
 
-\section{Examples}
-Default (1 line): $\multicancel{x+y}$\\
-Double (2 lines): $\multicancel[2]{x+y}$\\
-Quadruple (4 lines): $\multicancel[4]{x+y}$
+\section{Interface Commands}
+The package provides four main user-facing commands, all supporting custom line amounts via |[n]| and custom colors via an optional second argument:
+
+\begin{itemize}
+    \item |\multicancel[n][color]{content}| -- Forward parallel slashes (symmetrical distribution).
+    \item |\multibcancel[n][color]{content}| -- Backward parallel slashes.
+    \item |\multixcancel[n][color]{content}| -- Cross-cancellation (X-shaped slashes).
+    \item |\multicancelto[n][color]{target}{content}| -- Parallel slashes ending with an arrow pointing to a target value.
+\end{itemize}
+
+\section{Examples and Testing}
+
+\subsection{Basic Usage and Color Support}
+\begin{itemize}
+    \item Standard (3 slashes, red): $\multicancel[3][red]{x+y}$
+    \item Backward (2 slashes, blue): $\multibcancel[2][blue]{A \cdot B}$
+    \item Cross-Cancel (4 slashes, purple): $\multixcancel[4][purple]{M_n}$
+    \item Cancel To Value (2 slashes, orange): $\multicancelto[2][orange]{0}{f(x) - f(x)}$
+\end{itemize}
+
+\subsection{Tallable and Extendable Math Verification}
+The lines dynamically stretch across wide and high equations while maintaining a consistent visual slope:
 
 \[
-\multicancel[4]{\sum_{i=1}^{n} i} \quad \text{and} \quad \multicancel[3]{\int_{-\infty}^{\infty} e^{-x^2} \, dx}
+\multicancel[3][red]{\sum_{i=1}^{n} i} \quad \text{and} \quad \multibcancel[2][blue]{\int_{-\infty}^{\infty} e^{-x^2} \, dx}
 \]
+
+\[
+f(x) = \multicancelto[4][teal]{\infty}{ \frac{a_0 + \sum_{k=1}^{\infty} (a_k \cos kx + b_k \sin kx)}{2 \pi \cdot \sigma^2} }
+\]
+
+\section{License}
+Released under the \LaTeX\ Project Public License (LPPL) 1.3c or later.
 
 \end{document}
