@@ -1,55 +1,53 @@
 %% multicancel.sty
 %% Package for advanced, fully extendable, tallable, and colored parallel cancellations
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{multicancel}[2026/09/27 v1.3 Advanced Multi-line Cancellations]
+\ProvidesPackage{multicancel}[2026/09/27 v1.4 Advanced Multi-line Cancellations]
 
 \RequirePackage{amsmath}
 \RequirePackage{tikz}
 \RequirePackage{xcolor}
+\RequirePackage{xparse} % Fixes the Undefined \NewDocumentCommand error
 \usetikzlibrary{calc,arrows.meta}
 
 \makeatletter
-% Global variables for internal routing
+% Define explicit, safe text container boxes to store configuration values
 \newcommand{\multicancel@count}{1}
 \newcommand{\multicancel@color}{black}
-\newcommand{\multicancel@type}{c} % c = cancel, b = bcancel, x = xcancel, t = cancelto
+\newcommand{\multicancel@type}{c} 
 \newcommand{\multicancel@target}{}
 
-% Core drawing engine (Handles perfectly centered, extendable, and tallable vectors)
-\newcommand{\multicancel@engine}{%
+% Core drawing engine with perfectly valid parameter escaping (##1, ##2)
+\newcommand{\multicancel@engine}[2]{%
   \begin{tikzpicture}[baseline=(content.base), label distance=0pt]
-    % 1. Render the mathematical content safely preserving true math size
+    % Render mathematical expression
     \node[inner sep=0pt, outer sep=0pt] (content) {\ensuremath{#1#2}};
     
-    % 2. Loop to draw 'n' lines based on your selected package command
+    % Loop using token variables safely escaped for inner math boxes
     \foreach \i in {1,...,\multicancel@count} {
-      % Symmetrically interpolates and extends lines across the full boundary width
       \pgfmathsetmacro{\t}{\multicancel@count > 1 ? (\i - 1)/(\multicancel@count - 1) : 0.5}
       \pgfmathsetmacro{\offset}{(\t - 0.5) * 4.5pt}
       
-      % Setup colors dynamically without crashing text mode
       \tikzset{cancel@style/.style={draw=\multicancel@color, line cap=round, shorten <= -1.5pt, shorten >= -1.5pt}}
       
-      % Type 1: \multicancel (Your main command: Bottom-Left to Top-Right)
+      % Type 1: \multicancel
       \if\multicancel@type c
         \draw[cancel@style] ($(content.south west) + (\offset, 0)$) -- ($(content.north east) + (\offset, 0)$);
       \fi
       
-      % Type 2: \multibcancel (Backward cancel: Top-Left to Bottom-Right)
+      % Type 2: \multibcancel
       \if\multicancel@type b
         \draw[cancel@style] ($(content.north west) + (\offset, 0)$) -- ($(content.south east) + (\offset, 0)$);
       \fi
       
-      % Type 3: \multixcancel (Cross / X-Cancel)
+      % Type 3: \multixcancel
       \if\multicancel@type x
         \draw[cancel@style] ($(content.south west) + (\offset, 0)$) -- ($(content.north east) + (\offset, 0)$);
         \draw[cancel@style] ($(content.north west) + (\offset, 0)$) -- ($(content.south east) + (\offset, 0)$);
       \fi
       
-      % Type 4: \multicancelto (With Arrow and target value)
+      % Type 4: \multicancelto
       \if\multicancel@type t
         \ifnum\i=\multicancel@count
-          % The last line gets the arrow head and the target value node
           \draw[cancel@style, -{Stealth[scale=0.8]}] ($(content.south west) + (\offset, 0)$) -- ($(content.north east) + (\offset, 0)$)
             node[anchor=south west, inner sep=0.5pt, font=\scriptsize, text=\multicancel@color] {\ensuremath{#1\multicancel@target}};
         \else
@@ -60,27 +58,22 @@
   \end{tikzpicture}%
 }
 
-% --- User Interface Commands ---
-
-% 1. \multicancel[n][color]{content} (n = amount of slashes, color = optional)
+% --- Squeaky-Clean, Fully Parsed Interface Commands ---
 \NewDocumentCommand{\multicancel}{O{1} O{black} m}{%
   \def\multicancel@count{#1}\def\multicancel@color{#2}\def\multicancel@type{c}%
   \relax\ifmmode\mathpalette{\multicancel@engine}{#3}\else\multicancel@engine{\textstyle}{\text{#3}}\fi
 }
 
-% 2. \multibcancel[n][color]{content} (n = amount of backward slashes)
 \NewDocumentCommand{\multibcancel}{O{1} O{black} m}{%
   \def\multicancel@count{#1}\def\multicancel@color{#2}\def\multicancel@type{b}%
   \relax\ifmmode\mathpalette{\multicancel@engine}{#3}\else\multicancel@engine{\textstyle}{\text{#3}}\fi
 }
 
-% 3. \multixcancel[n][color]{content} (n = amount of cross slashes)
 \NewDocumentCommand{\multixcancel}{O{1} O{black} m}{%
   \def\multicancel@count{#1}\def\multicancel@color{#2}\def\multicancel@type{x}%
   \relax\ifmmode\mathpalette{\multicancel@engine}{#3}\else\multicancel@engine{\textstyle}{\text{#3}}\fi
 }
 
-% 4. \multicancelto[n][color]{target}{content} (n = amount of slashes with arrow to target value)
 \NewDocumentCommand{\multicancelto}{O{1} O{black} m m}{%
   \def\multicancel@count{#1}\def\multicancel@color{#2}\def\multicancel@type{t}\def\multicancel@target{#3}%
   \relax\ifmmode\mathpalette{\multicancel@engine}{#4}\else\multicancel@engine{\textstyle}{\text{#4}}\fi
